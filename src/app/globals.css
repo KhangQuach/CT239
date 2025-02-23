@@ -3,3 +3,17 @@
 @tailwind utilities;
 
 
+.custom-button {
+  background-color: transparent !important;
+  border-color: white !important;
+  color: white !important;
+}
+
+.custom-button:hover {
+  background-color: white !important;
+  color: black !important;
+}
+
+.custom-select:hover .ant-select-selector {
+  border-color: black !important;
+}

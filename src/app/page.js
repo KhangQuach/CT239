@@ -14,37 +14,67 @@ import {
 } from '@xyflow/react';
 import Header from '../components/header'
 
-const initialNodes = [
-  {
-    id: '1',
-    data: { label: '1' },
-    position: { x: 0, y: 0 },
-    type: 'input',
-  },
-  {
-    id: '2',
-    data: { label: '2' },
-    position: { x: 100, y: 100 },
-  },
-  {
-    id: '3',
-    data: { label: '3' },
-    position: { x: 300, y: 300 },
-  },
-];
-const initialEdges = [
-  {
-    id: 'e1-2',
-    source: '1',
-    target: '2'
-  },
-  {
-    id: 'e2-3',
-    source: '2',
-    target: '3'
-  }
-];
+// const initialNodes = [
+//   {
+//     id: '1',
+//     data: { label: '1' },
+//     position: { x: 0, y: 0 },
+//     type: 'input',
+//   },
+//   {
+//     id: '2',
+//     data: { label: '2' },
+//     position: { x: 100, y: 100 },
+//   },
+//   {
+//     id: '3',
+//     data: { label: '3' },
+//     position: { x: 300, y: 300 },
+//   },
+// ];
+// const initialEdges = [
+//   {
+//     id: 'e1-2',
+//     source: '1',
+//     target: '2'
+//   },
+//   {
+//     id: 'e2-3',
+//     source: '2',
+//     target: '3'
+//   }
+// ];
 export default function App() {
+  const [initialNodes, setInitialNodes] = useState([
+    {
+      id: '1',
+      data: { label: '1' },
+      position: { x: 0, y: 0 },
+      type: 'input',
+    },
+    {
+      id: '2',
+      data: { label: '2' },
+      position: { x: 100, y: 100 },
+    },
+    {
+      id: '3',
+      data: { label: '3' },
+      position: { x: 300, y: 300 },
+    },
+  ])
+  const [initialEdges, setInitialEdges] = useState([
+    {
+      id: 'e1-2',
+      source: '1',
+      target: '2'
+    },
+    {
+      id: 'e2-3',
+      source: '2',
+      target: '3'
+    }
+  ])
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
   const [selectedNode, setSelectedNode] = useState(null);
@@ -58,13 +88,14 @@ export default function App() {
     const handleKeyDown = (event) => {
       if (event.key === 'Delete' && selectedNode) {
         console.log('Deleted node')
-        setNodes(initialNodes.filter(node => node.id !== selectedNode.id))
-        setEdges(initialEdges.filter(edge => edge.source !== selectedNode.id && edge.target !== selectedNode.id));
+        setInitialNodes(initialNodes.filter(node => node.id !== selectedNode.id))
+        setNodes(initialNodes)
+        // setEdges(initialEdges.filter(edge => edge.source !== selectedNode.id && edge.target !== selectedNode.id));
         setSelectedNode(null)
       }
     };
 
-    document.addEventListener('keydown', handleKeyDown);
+    document.addEventListener('keydown', handleKeyDown)
     return () => {
       document.removeEventListener('keydown', handleKeyDown);
     };
