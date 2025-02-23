@@ -12,7 +12,7 @@ import {
   Panel,
   ControlButton,
 } from '@xyflow/react';
-import Header from '../../components/header';
+import Header from '../components/header'
 
 const initialNodes = [
   {
@@ -73,7 +73,7 @@ export default function App() {
   return (
     <>
       <Header />
-      <div style={{ width: '100vw', height: '80vh' }}>
+      <div style={{ width: '100vw', height: '100vh' }}>
         <ReactFlow
           nodes={nodes}
           edges={edges}
