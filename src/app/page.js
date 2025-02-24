@@ -50,7 +50,6 @@ export default function App() {
       id: '1',
       data: { label: '1' },
       position: { x: 0, y: 0 },
-      type: 'input',
     },
     {
       id: '2',
@@ -73,6 +72,11 @@ export default function App() {
       id: 'e2-3',
       source: '2',
       target: '3'
+    },
+    {
+      id: 'e3-1',
+      source: '3',
+      target: '1'
     }
   ])
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
@@ -83,15 +87,19 @@ export default function App() {
     (params) => setEdges((eds) => addEdge(params, eds)),
     [setEdges],
   );
-
   useEffect(() => {
     const handleKeyDown = (event) => {
       if (event.key === 'Delete' && selectedNode) {
         console.log('Deleted node')
         setInitialNodes(initialNodes.filter(node => node.id !== selectedNode.id))
-        setNodes(initialNodes)
-        // setEdges(initialEdges.filter(edge => edge.source !== selectedNode.id && edge.target !== selectedNode.id));
+        setNodes(initialNodes.filter(node => node.id !== selectedNode.id))
+        setInitialEdges(initialEdges.filter(edge => edge.source !== selectedNode.id && edge.target !== selectedNode.id))
+        setEdges(initialEdges.filter(edge => edge.source !== selectedNode.id && edge.target !== selectedNode.id))
         setSelectedNode(null)
+      }
+      if(event.key === 'Delete' && selectedEdge){
+        console.log('Deleted edge')
+        setSelectedEdge(null)
       }
     };
 
@@ -100,7 +108,14 @@ export default function App() {
       document.removeEventListener('keydown', handleKeyDown);
     };
   }, [selectedNode]);
-
+  if(selectedNode){
+    console.log(selectedNode)
+  }
+  if(selectedEdge){
+    console.log(selectedEdge)
+  }
+  
+  console.log(initialEdges)
   return (
     <>
       <Header />
@@ -113,11 +128,10 @@ export default function App() {
           onConnect={onConnect}
           onNodeClick={(event, node) => {
             setSelectedNode(node)
-            console.log(node)
+            
           }}
           onEdgeClick={(event, edge) => {
             setSelectedEdge(edge)
-            console.log(edge)
           }}
         >
           <MiniMap />
