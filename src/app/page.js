@@ -12,7 +12,7 @@ import {
   Panel,
   ControlButton,
 } from '@xyflow/react';
-import Header from '../components/header'
+import Header from '../components/Header'
 
 // const initialNodes = [
 //   {
@@ -66,17 +66,20 @@ export default function App() {
     {
       id: 'e1-2',
       source: '1',
-      target: '2'
+      target: '2',
+      type: 'step'
     },
     {
       id: 'e2-3',
       source: '2',
-      target: '3'
+      target: '3',
+      type: 'step'
     },
     {
       id: 'e3-1',
       source: '3',
-      target: '1'
+      target: '1',
+      type: 'step'
     }
   ])
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);

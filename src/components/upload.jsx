@@ -1,26 +1,49 @@
-import React from 'react';
-import { UploadOutlined } from '@ant-design/icons';
-import { Button, message, Upload } from 'antd';
-const props = {
-  name: 'file',
-  action: 'https://660d2bd96ddfa2943b33731c.mockapi.io/api/upload',
-  headers: {
-    authorization: 'authorization-text',
-  },
-  onChange(info) {
-    if (info.file.status !== 'uploading') {
-      console.log(info.file, info.fileList);
+'use client'
+import React, { useState } from 'react'
+import { Upload, Button, message, Alert  } from 'antd'
+import { UploadOutlined } from '@ant-design/icons'
+
+const TextFileReader = () => {
+  const [fileContent, setFileContent] = useState(null)
+  console.log(fileContent)
+
+  const handleFileRead = (file) => {
+    const reader = new FileReader()
+    reader.onload = (e) => {
+      setFileContent(e.target.result)
+      message.success(`${file.name} file read successfully`)
     }
-    if (info.file.status === 'done') {
-      message.success(`${info.file.name} file uploaded successfully`);
-    } else if (info.file.status === 'error') {
-      message.error(`${info.file.name} file upload failed.`);
+    reader.onerror = (e) => {
+      message.error(`Failed to read file: ${e.target.error.code}`)
     }
-  },
-};
-const UploadButton = () => (
-  <Upload {...props}>
-    <Button className='custom-button' icon={<UploadOutlined />}>Click to Upload</Button>
-  </Upload>
-);
-export default UploadButton;
+    reader.readAsText(file)
+    return false  // Prevent upload
+    
+  }
+
+  const props = {
+    beforeUpload: file => {
+      if (!file.type.includes('text/plain')) {
+        message.error('Only TXT files are allowed!');
+        return Upload.LIST_IGNORE;
+      }
+      return handleFileRead(file);
+    },
+    accept: '.txt',  // Accept only .txt files
+    onRemove: () => setFileContent('')  // Clear content when file is removed
+  }
+
+  return (
+    <div className=''>
+      <Upload {...props} >
+        <Button className='custom-button' icon={<UploadOutlined />}>Click to Upload and Read .txt File</Button>
+      </Upload>
+      <div>
+        <h3 className="">File Content:</h3>
+        <textarea className='rounded-md' value={fileContent || ""} readOnly disabled style={{ width: '150%', height: '100px' }} />
+      </div>
+    </div>
+  )
+}
+
+export default TextFileReader
