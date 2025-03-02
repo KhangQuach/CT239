@@ -7,7 +7,7 @@ export default function convertMatrixToDirectedGraph(matrix) {
     initialNodes.push({
       id: String(index + 1),
       data: { label: `Node ${index + 1}` },
-      position: { x: 100 + index * 100, y: 100 }, // Ví dụ về vị trí, có thể tùy chỉnh
+      position: { x: 100 + index * 100, y: 300 + index * 100 }, // Ví dụ về vị trí, có thể tùy chỉnh
     });
   });
 
@@ -21,9 +21,6 @@ export default function convertMatrixToDirectedGraph(matrix) {
           target: String(targetIndex + 1),
           weight: value,
           label: `${value}`, // Thêm trọng số vào nhãn cạnh
-          type: 'straight', // Đặt loại cạnh mặc định, có thể tùy chỉnh
-          animated: true, // Giả sử tất cả các cạnh đều được hiển thị với hiệu ứng
-          style: { stroke: '#f6ab6c' }, // Màu sắc cạnh, có thể tùy chỉnh
         });
       }
     });

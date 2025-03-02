@@ -5,12 +5,15 @@ import { Upload, Button, message } from 'antd'
 import { UploadOutlined } from '@ant-design/icons'
 import convertMatrixToUndirectedGraph from '@/utils/convertMatrixToUndirectedGraph'
 import convertMatrixToDirectedGraph from '@/utils/convertMatrixTodirectedGraph'
+import validateMatrix from '@/utils/validateMatrix'
+import isUndirectedMatrix from '@/utils/isUndirectedMatrix'
 export default function Header({ setNodes, setEdges }) {
   // Handle run algorithm
   const [algorithm, setAlgorithm] = useState('Choose a algorithm')
   const [direct, setDirect] = useState('Choose a direct')
   const [fileContent, setFileContent] = useState(null)
   const [matrix, setMatrix] = useState([])
+  const [hasNegativeWeights, setHasNegativeWeights] = useState(false)
   useEffect(() => {
     console.log('Matrix updated:', matrix)
   }, [matrix])
@@ -21,28 +24,47 @@ export default function Header({ setNodes, setEdges }) {
   }
   const handleChangeDirect = (value) => {
     setDirect(value)
+    if(!matrix.length){
+      console.log("This is not matrix data!")
+      return
+    } 
     switch (value) {
       case "directed":
-        // Code to execute if expression === value1
-        const directedGraph = convertMatrixToDirectedGraph(matrix)
-        console.log('Directed Graph Nodes:', directedGraph.initialNodes)
-        console.log('Directed Graph Edges:', directedGraph.initialEdges)
-        setNodes(directedGraph.initialNodes)
-        setEdges(directedGraph.initialEdges)
+        if(!isUndirectedMatrix(matrix)){
+          const directedGraph = convertMatrixToDirectedGraph(matrix)
+          setNodes(directedGraph.initialNodes)
+          setEdges(directedGraph.initialEdges)
+        }
+        else{
+          setDirect('Choose a direct')
+          console.log("Matrix is Undirected")
+        }
         break;
       case "undirected":
-        // Code to execute if expression === value2
-        const undirectedGraph = convertMatrixToUndirectedGraph(matrix)
-        console.log('Undirected Graph Nodes:', undirectedGraph.initialNodes)
-        console.log('Undirected Graph Edges:', undirectedGraph.initialEdges)
-        setNodes(undirectedGraph.initialNodes)
-        setEdges(undirectedGraph.initialEdges)
+        if(isUndirectedMatrix(matrix)){
+          const undirectedGraph = convertMatrixToUndirectedGraph(matrix)
+          setNodes(undirectedGraph.initialNodes)
+          setEdges(undirectedGraph.initialEdges)
+        }
+        else{
+          setDirect('Choose a direct')
+          console.log("Matrix is directed")
+        }
         break;
       default:
-      // Code to execute if no cases match
-      console.log('Choose a direct option')
+        // Code to execute if no cases match
+        console.log('Choose a direct option')
         break;
     }
+  }
+  const handleResetAll = () => {
+    setMatrix([])
+    setNodes([])
+    setEdges([])
+    setFileContent('')
+    setAlgorithm('Choose a algorithm')
+    setDirect('Choose a direct')
+    setHasNegativeWeights(false)
   }
   const handleRunAlgorithm = () => {
     console.log(algorithm)
@@ -55,8 +77,14 @@ export default function Header({ setNodes, setEdges }) {
       const content = e.target.result
       setFileContent(content)
       const parsedMatrix = content.trim().split('\n').map(row => row.trim().split(' ').map(Number))
-      console.log('Parsed matrix:', parsedMatrix) // Log parsed matrix
-      setMatrix(parsedMatrix)
+      const { isMatrix, hasNegativeWeights } = validateMatrix(parsedMatrix)
+      console.log(isMatrix)
+      if (isMatrix) {
+        setMatrix(parsedMatrix)
+      } else {
+        message.error('Invalid matrix')
+      }
+      setHasNegativeWeights(hasNegativeWeights)
       message.success(`${file.name} file read successfully`)
     }
     reader.onerror = (e) => {
@@ -138,7 +166,7 @@ export default function Header({ setNodes, setEdges }) {
             },
           ]}
         />
-        <Button className='custom-button'>Reset</Button>
+        <Button onClick={handleResetAll} className='custom-button'>Reset</Button>
         <Button onClick={handleRunAlgorithm} className='custom-button'>
           Run
         </Button>
