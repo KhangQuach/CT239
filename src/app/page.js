@@ -20,6 +20,7 @@ export default function App() {
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
   const [selectedNode, setSelectedNode] = useState(null);
   const [selectedEdge, setSelectedEdge] = useState(null);
+  const [selected, setSelected] = useState(null)
   const onConnect = useCallback(
     (params) => setEdges((eds) => addEdge(params, eds)),
     [setEdges],
@@ -55,7 +56,7 @@ export default function App() {
   }
   return (
     <>
-      <Header setNodes={setNodes} setEdges={setEdges}/>
+      <Header nodes={nodes} setNodes={setNodes} setEdges={setEdges} selectedNode={selectedNode} selectedEdge={selectedEdge} />
       <div style={{ width: '100vw', height: '100vh' }}>
         <ReactFlow
           nodes={nodes}

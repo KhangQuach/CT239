@@ -1,6 +1,11 @@
 const { app, BrowserWindow } = require("electron");
 const path = require("path");
 
+// Enable electron-reload for hot reloading
+require('electron-reload')(__dirname, {
+  electron: path.join(__dirname, '..', 'node_modules', '.bin', 'electron')
+});
+
 let mainWindow;
 
 app.whenReady().then(() => {

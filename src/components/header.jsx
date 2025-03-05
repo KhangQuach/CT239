@@ -8,13 +8,14 @@ import convertMatrixToDirectedGraph from '@/utils/convertMatrixTodirectedGraph'
 import validateMatrix from '@/utils/validateMatrix'
 import isUndirectedMatrix from '@/utils/isUndirectedMatrix'
 import { Slide, toast } from 'react-toastify'
-export default function Header({ setNodes, setEdges }) {
+export default function Header({ nodes, setNodes, setEdges, selectedNode, selectedEdge }) {
   // Handle run algorithm
   const [algorithm, setAlgorithm] = useState('Choose a algorithm')
   const [direct, setDirect] = useState('Choose a direct')
   const [fileContent, setFileContent] = useState(null)
   const [matrix, setMatrix] = useState([])
   const [hasNegativeWeights, setHasNegativeWeights] = useState(false)
+  const [nodeStart, setNodeStart] = useState('Start node')
   useEffect(() => {
     console.log('Matrix updated:', matrix)
   }, [matrix])
@@ -58,6 +59,9 @@ export default function Header({ setNodes, setEdges }) {
         break;
     }
   }
+  const handleChangeNodeStart = (value) => {
+    setNodeStart(value)
+  }
   const handleResetAll = () => {
     setMatrix([])
     setNodes([])
@@ -69,8 +73,8 @@ export default function Header({ setNodes, setEdges }) {
   }
   const handleRunAlgorithm = () => {
     console.log(algorithm)
-  }
 
+  }
   // Upload File
   const handleFileRead = (file) => {
     const reader = new FileReader()
@@ -79,12 +83,12 @@ export default function Header({ setNodes, setEdges }) {
       setFileContent(content)
       const parsedMatrix = content.trim().split('\n').map(row => row.trim().split(' ').map(Number))
       const { isMatrix, hasNegativeWeights } = validateMatrix(parsedMatrix)
-      console.log("Is matrix: ",isMatrix)
+      console.log("Is matrix: ", isMatrix)
       if (isMatrix) {
         setMatrix(parsedMatrix)
         toast.dismiss()
         toast.success('Ma trận hợp lệ!', {
-          position: "top-right",
+          position: "bottom-right",
           autoClose: 3000,
           hideProgressBar: false,
           closeOnClick: true,
@@ -120,7 +124,7 @@ export default function Header({ setNodes, setEdges }) {
     return false  // Prevent upload
   }
 
-  const props = {
+  const UploadProps = {
     beforeUpload: file => {
       if (!file || file.size === 0) {
         toast.dismiss()
@@ -156,18 +160,39 @@ export default function Header({ setNodes, setEdges }) {
       return handleFileRead(file)
     },
     accept: '.txt',  // Accept only .txt files
+    maxCount: 1,  // Accept only one file
     onRemove: () => setFileContent('')  // Clear content when file is removed
   }
 
   return (
     <div className="w-screen h-50 bg-black fixed z-10 flex justify-between items-center px-5 py-5 text-white">
-      <div>
-        <Upload {...props} >
-          <Button className='custom-button' icon={<UploadOutlined />}>Click to Upload and Read .txt File</Button>
-        </Upload>
+      <div className='flex gap-2'>
         <div>
-          <h3 className="">File Content:</h3>
-          <textarea className='rounded-md' value={fileContent || ""} readOnly disabled style={{ width: '100%', height: '100px' }} />
+          <Upload {...UploadProps} >
+            <Button className='custom-button' icon={<UploadOutlined />}>Click to Upload and Read .txt File</Button>
+          </Upload>
+          <div>
+            <h3 className="">File Content:</h3>
+            <textarea className='rounded-md' value={fileContent || ""} readOnly disabled style={{ width: '100%', height: '100px' }} />
+          </div>
+        </div>
+        <div className='flex gap-2'>
+          {selectedNode && (
+            <div className='border border-white p-2 rounded-md'>
+              <h3>Selected Node</h3>
+              <p>ID: {selectedNode.id}</p>
+              <p>Label: {selectedNode.data.label}</p>
+            </div>
+          )}
+          {selectedEdge && (
+            <div className='border border-white p-2 rounded-md'>
+              <h3>Selected Edge</h3>
+              <p>ID: {selectedEdge.id}</p>
+              <p>Source: {selectedEdge.source}</p>
+              <p>Target: {selectedEdge.target}</p>
+              <p>Weight: {selectedEdge.weight}</p>
+            </div>
+          )}
         </div>
       </div>
       <div className='flex gap-2 w-fit'>
@@ -218,6 +243,18 @@ export default function Header({ setNodes, setEdges }) {
               label: 'Undirected Graph',
             },
           ]}
+        />
+        <Select
+          className='custom-select node-start'
+          style={{
+            width: 120,
+          }}
+          defaultValue={nodeStart}
+          onChange={handleChangeNodeStart}
+          options={nodes.map(node => ({
+            value: node.id,
+            label: node.data.label
+          }))}
         />
         <Button onClick={handleResetAll} className='custom-button'>Reset</Button>
         <Button onClick={handleRunAlgorithm} className='custom-button'>
