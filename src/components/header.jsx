@@ -7,6 +7,7 @@ import convertMatrixToUndirectedGraph from '@/utils/convertMatrixToUndirectedGra
 import convertMatrixToDirectedGraph from '@/utils/convertMatrixTodirectedGraph'
 import validateMatrix from '@/utils/validateMatrix'
 import isUndirectedMatrix from '@/utils/isUndirectedMatrix'
+import { Slide, toast } from 'react-toastify'
 export default function Header({ setNodes, setEdges }) {
   // Handle run algorithm
   const [algorithm, setAlgorithm] = useState('Choose a algorithm')
@@ -24,29 +25,29 @@ export default function Header({ setNodes, setEdges }) {
   }
   const handleChangeDirect = (value) => {
     setDirect(value)
-    if(!matrix.length){
+    if (!matrix.length) {
       console.log("This is not matrix data!")
       return
-    } 
+    }
     switch (value) {
       case "directed":
-        if(!isUndirectedMatrix(matrix)){
+        if (!isUndirectedMatrix(matrix)) {
           const directedGraph = convertMatrixToDirectedGraph(matrix)
           setNodes(directedGraph.initialNodes)
           setEdges(directedGraph.initialEdges)
         }
-        else{
+        else {
           setDirect('Choose a direct')
           console.log("Matrix is Undirected")
         }
         break;
       case "undirected":
-        if(isUndirectedMatrix(matrix)){
+        if (isUndirectedMatrix(matrix)) {
           const undirectedGraph = convertMatrixToUndirectedGraph(matrix)
           setNodes(undirectedGraph.initialNodes)
           setEdges(undirectedGraph.initialEdges)
         }
-        else{
+        else {
           setDirect('Choose a direct')
           console.log("Matrix is directed")
         }
@@ -78,13 +79,38 @@ export default function Header({ setNodes, setEdges }) {
       setFileContent(content)
       const parsedMatrix = content.trim().split('\n').map(row => row.trim().split(' ').map(Number))
       const { isMatrix, hasNegativeWeights } = validateMatrix(parsedMatrix)
-      console.log(isMatrix)
+      console.log("Is matrix: ",isMatrix)
       if (isMatrix) {
         setMatrix(parsedMatrix)
+        toast.dismiss()
+        toast.success('Ma trận hợp lệ!', {
+          position: "top-right",
+          autoClose: 3000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: "dark",
+          transition: Slide,
+        });
       } else {
+        toast.dismiss()
+        toast.error('Ma trận không hợp lệ!', {
+          position: "bottom-right",
+          autoClose: 3000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: "dark",
+          transition: Slide,
+        });
         message.error('Invalid matrix')
       }
       setHasNegativeWeights(hasNegativeWeights)
+
       message.success(`${file.name} file read successfully`)
     }
     reader.onerror = (e) => {
@@ -96,8 +122,35 @@ export default function Header({ setNodes, setEdges }) {
 
   const props = {
     beforeUpload: file => {
-      if (!file.type.includes('text/plain')) {
-        message.error('Only TXT files are allowed!')
+      if (!file || file.size === 0) {
+        toast.dismiss()
+        toast.error('File does not exist or is empty!', {
+          position: "bottom-right",
+          autoClose: 3000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: "dark",
+          transition: Slide,
+        });
+        return Upload.LIST_IGNORE
+      }
+      const isTxt = file.type === 'text/plain' && file.name.endsWith('.txt')
+      if (!isTxt) {
+        toast.dismiss()
+        toast.error('Chỉ cho phép file txt!', {
+          position: "bottom-right",
+          autoClose: 3000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: "dark",
+          transition: Slide,
+        });
         return Upload.LIST_IGNORE
       }
       return handleFileRead(file)
