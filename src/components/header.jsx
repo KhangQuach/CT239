@@ -8,6 +8,7 @@ import convertMatrixToDirectedGraph from '@/utils/convertMatrixTodirectedGraph'
 import validateMatrix from '@/utils/validateMatrix'
 import isUndirectedMatrix from '@/utils/isUndirectedMatrix'
 import { Slide, toast } from 'react-toastify'
+import { Card } from "antd";
 export default function Header({ nodes, setNodes, setEdges, selectedNode, selectedEdge }) {
   // Handle run algorithm
   const [algorithm, setAlgorithm] = useState('Choose a algorithm')
@@ -144,7 +145,7 @@ export default function Header({ nodes, setNodes, setEdges, selectedNode, select
       const isTxt = file.type === 'text/plain' && file.name.endsWith('.txt')
       if (!isTxt) {
         toast.dismiss()
-        toast.error('Chỉ cho phép file txt!', {
+        toast.error('Chỉ cho phép file .txt!', {
           position: "bottom-right",
           autoClose: 3000,
           hideProgressBar: false,
@@ -178,29 +179,63 @@ export default function Header({ nodes, setNodes, setEdges, selectedNode, select
         </div>
         <div className='flex gap-2'>
           {selectedNode && (
-            <div className='border border-white p-2 rounded-md'>
-              <h3>Selected Node</h3>
+            <Card
+              title={`Node ${selectedNode.id}`}
+              extra={
+                <button className=' text-black hover:text-opacity-15'>delete</button>
+              }
+              style={{
+                width: 165,
+              }}
+              size="small"
+            >
               <p>ID: {selectedNode.id}</p>
               <p>Label: {selectedNode.data.label}</p>
-            </div>
+            </Card>
           )}
           {selectedEdge && (
-            <div className='border border-white p-2 rounded-md'>
-              <h3>Selected Edge</h3>
+            <Card
+              title={`Edge ${selectedEdge.id}`}
+              extra={
+                <button className=' text-black hover:text-opacity-15'>delete</button>
+              }
+              style={{
+                width: 165,
+              }}
+              size="small"
+            >
               <p>ID: {selectedEdge.id}</p>
               <p>Source: {selectedEdge.source}</p>
               <p>Target: {selectedEdge.target}</p>
               <p>Weight: {selectedEdge.weight}</p>
-            </div>
+            </Card>
           )}
         </div>
       </div>
       <div className='flex gap-2 w-fit'>
         <Select
           className='custom-select'
+          defaultValue={direct}
+          style={{
+            width: 180,
+          }}
+          onChange={handleChangeDirect}
+          options={[
+            {
+              value: 'directed',
+              label: 'Directed Graph',
+            },
+            {
+              value: 'undirected',
+              label: 'Undirected Graph',
+            },
+          ]}
+        />
+        <Select
+          className='custom-select'
           defaultValue={algorithm}
           style={{
-            width: 200,
+            width: 180,
           }}
           onChange={handleChangeAlgorithm}
           options={[
@@ -223,24 +258,6 @@ export default function Header({ nodes, setNodes, setEdges, selectedNode, select
             {
               value: 'johnson',
               label: 'Johnson',
-            },
-          ]}
-        />
-        <Select
-          className='custom-select'
-          defaultValue={direct}
-          style={{
-            width: 200,
-          }}
-          onChange={handleChangeDirect}
-          options={[
-            {
-              value: 'directed',
-              label: 'Directed Graph',
-            },
-            {
-              value: 'undirected',
-              label: 'Undirected Graph',
             },
           ]}
         />
