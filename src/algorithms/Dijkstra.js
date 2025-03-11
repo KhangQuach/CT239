@@ -5,7 +5,8 @@ class PriorityQueue {
     }
 
     enqueue(priority, key) {
-        this.nodes.push({ key, priority });
+        const node = { key, priority };
+        this.nodes.push(node);
         this.nodes.sort((a, b) => a.priority - b.priority);
     }
 
@@ -19,6 +20,7 @@ class PriorityQueue {
 }
 
 export default function Dijkstra(edges, startVertex, direct, hasNegativeWeights) {
+    const startTime = performance.now();
     if (hasNegativeWeights) {
         throw new Error('Dijkstra algorithm does not support negative weights.');
     }
@@ -32,8 +34,8 @@ export default function Dijkstra(edges, startVertex, direct, hasNegativeWeights)
         return acc;
     }, {});
 
-    const distances = {};
-    const previousVertices = {};
+    let distances = {};
+    let previousVertices = {};
     const priorityQueue = new PriorityQueue();
 
     // Initialize distances and priority queue
@@ -72,8 +74,12 @@ export default function Dijkstra(edges, startVertex, direct, hasNegativeWeights)
             }
         }
     }
-
-    return { distances, previousVertices, edgeList };
+    distances = Object.keys(distances).map(key => ({ vertex: key, distance: distances[key] }));
+    previousVertices = Object.keys(previousVertices).map(key => ({ vertex: key, previous: previousVertices[key] }));
+    const endTime = performance.now();
+    const executionTime = endTime - startTime;
+    console.log('Dijkstra execution time: ', executionTime);
+    return { distances, previousVertices, edgeList, executionTime};
 }
 
 

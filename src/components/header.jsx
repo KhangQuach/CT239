@@ -2,7 +2,7 @@
 import { Select } from 'antd'
 import React, { useEffect, useState } from 'react'
 import { Upload, Button, message } from 'antd'
-import { UploadOutlined } from '@ant-design/icons'
+import { CaretRightOutlined, ReloadOutlined, UploadOutlined } from '@ant-design/icons'
 import convertMatrixToUndirectedGraph from '@/utils/convertMatrixToUndirectedGraph'
 import convertMatrixToDirectedGraph from '@/utils/convertMatrixToDirectedGraph'
 import validateMatrix from '@/utils/validateMatrix'
@@ -10,6 +10,7 @@ import isUndirectedMatrix from '@/utils/isUndirectedMatrix'
 import { Slide, toast } from 'react-toastify'
 import { Card } from "antd";
 import Dijkstra from '@/algorithms/Dijkstra'
+
 export default function Header({ nodes, edges, setNodes, setEdges, selectedNode, selectedEdge, setSelectedNode, setSelectedEdge }) {
   // Handle run algorithm
   const [algorithm, setAlgorithm] = useState('Choose a algorithm')
@@ -18,14 +19,27 @@ export default function Header({ nodes, edges, setNodes, setEdges, selectedNode,
   const [matrix, setMatrix] = useState([])
   const [hasNegativeWeights, setHasNegativeWeights] = useState(false)
   const [nodeStart, setNodeStart] = useState('Start node')
+  const [distances, setDistances] = useState([])
+  const [previousVertices, setPreviousVertices] = useState([])
+  const [edgeList, setEdgeList] = useState([])
+  const [loading, setLoading] = useState(false)
+  const [executeTime, setExecuteTime] = useState(0)
+  const [error, setError] = useState(null)
+  const [onRun, setOnRun] = useState(false)
+
   useEffect(() => {
     console.log('Matrix updated:', matrix)
   }, [matrix])
+
+  useEffect(() => {
+    console.log(error)
+  }, [error])
 
   const handleChangeAlgorithm = (value) => {
     console.log(`selected ${value}`)
     setAlgorithm(value)
   }
+
   const handleChangeDirect = (value) => {
     setDirect(value)
     if (!matrix.length) {
@@ -38,32 +52,32 @@ export default function Header({ nodes, edges, setNodes, setEdges, selectedNode,
           const directedGraph = convertMatrixToDirectedGraph(matrix)
           setNodes(directedGraph.initialNodes)
           setEdges(directedGraph.initialEdges)
-        }
-        else {
+        } else {
           setDirect('Choose a direct')
           console.log("Matrix is Undirected")
         }
-        break;
+        break
       case "undirected":
         if (isUndirectedMatrix(matrix)) {
           const undirectedGraph = convertMatrixToUndirectedGraph(matrix)
           setNodes(undirectedGraph.initialNodes)
           setEdges(undirectedGraph.initialEdges)
-        }
-        else {
+        } else {
           setDirect('Choose a direct')
           console.log("Matrix is directed")
         }
-        break;
+        break
       default:
         // Code to execute if no cases match
         console.log('Choose a direct option')
-        break;
+        break
     }
   }
+
   const handleChangeNodeStart = (value) => {
     setNodeStart(value)
   }
+
   const handleResetAll = () => {
     setMatrix([])
     setNodes([])
@@ -71,22 +85,35 @@ export default function Header({ nodes, edges, setNodes, setEdges, selectedNode,
     setFileContent('')
     setAlgorithm('Choose a algorithm')
     setDirect('Choose a direct')
+    setNodeStart('Start node')
     setHasNegativeWeights(false)
+    setDistances([])
+    setPreviousVertices([])
+    setEdgeList([])
+    setLoading(false)
+    setExecuteTime(0)
+    setError(null)
+    setOnRun(false)
   }
+
   const handleRunAlgorithm = () => {
     console.log(algorithm)
-    switch(algorithm) {
+    switch (algorithm) {
       case 'dijkstra':
-        const { distances, previousVertices, edgeList} = Dijkstra(edges, nodeStart, direct, hasNegativeWeights);
-        const data = {
-          distances,
-          previousVertices,
-          edgeList
+        try {
+          const { distances, previousVertices, edgeList, executeTime } = Dijkstra(edges, nodeStart, direct, hasNegativeWeights);
+          console.log(distances, previousVertices, edgeList)
+          setDistances(distances)
+          setPreviousVertices(previousVertices)
+          setEdgeList(edgeList)
+          setExecuteTime(executeTime)
+          setOnRun(true)
+        } catch (e) {
+          setError(e)
         }
-        console.log(data)
     }
-
   }
+
   // Upload File
   const handleFileRead = (file) => {
     const reader = new FileReader()
@@ -126,7 +153,6 @@ export default function Header({ nodes, edges, setNodes, setEdges, selectedNode,
         message.error('Invalid matrix')
       }
       setHasNegativeWeights(hasNegativeWeights)
-
       message.success(`${file.name} file read successfully`)
     }
     reader.onerror = (e) => {
@@ -175,17 +201,20 @@ export default function Header({ nodes, edges, setNodes, setEdges, selectedNode,
     maxCount: 1,  // Accept only one file
     onRemove: () => setFileContent('')  // Clear content when file is removed
   }
+
   const handleDeleteNode = () => {
     // Implement delete node logic here
-    setNodes(nodes.filter(node => node.id!== selectedNode.id))
-    setEdges(edges.filter(edge => edge.source!== selectedNode.id && edge.target!== selectedNode.id))
+    setNodes(nodes.filter(node => node.id !== selectedNode.id))
+    setEdges(edges.filter(edge => edge.source !== selectedNode.id && edge.target !== selectedNode.id))
     setSelectedNode(null)
   }
+
   const handleDeleteEdge = () => {
     // Implement delete edge logic here
     setEdges(edges.filter(edge => edge.id !== selectedEdge.id))
     setSelectedEdge(null)
   }
+
   return (
     <div className="w-screen h-50 bg-black fixed z-10 flex justify-between items-center px-5 py-5 text-white">
       <div className='flex gap-2'>
@@ -195,7 +224,7 @@ export default function Header({ nodes, edges, setNodes, setEdges, selectedNode,
           </Upload>
           <div>
             <h3 className="">File Content:</h3>
-            <textarea className='rounded-md' value={fileContent || ""} readOnly disabled style={{ width: '100%', height: '100px' }} />
+            <textarea className='rounded-md min-h-24' value={fileContent || ""} readOnly disabled style={{ width: '100%', height: '100px' }} />
           </div>
         </div>
         <div className='flex gap-2'>
@@ -207,6 +236,7 @@ export default function Header({ nodes, edges, setNodes, setEdges, selectedNode,
               }
               style={{
                 width: 165,
+                maxHeight: 195
               }}
               size="small"
             >
@@ -222,6 +252,7 @@ export default function Header({ nodes, edges, setNodes, setEdges, selectedNode,
               }
               style={{
                 width: 165,
+                maxHeight: 195
               }}
               size="small"
             >
@@ -233,10 +264,56 @@ export default function Header({ nodes, edges, setNodes, setEdges, selectedNode,
           )}
         </div>
       </div>
+      <div>
+        {algorithm === 'dijkstra' && onRun && !error &&
+          <div className='flex gap-2'>
+            <Card
+              title={`Distances from Node ${nodeStart}`}
+              style={{
+                minWidth: 165,
+                maxHeight: 195,
+                overflow: 'auto'
+              }}
+              size="small"
+            >
+              {distances.map((dist, i) => {
+                return <p key={i}>Node {dist.vertex}, Distance: {dist.distance}</p>
+              })}
+            </Card>
+            <Card
+              title={`Previous Vertices`}
+              style={{
+                minWidth: 165,
+                maxHeight: 195,
+                overflow: 'auto'
+              }}
+              size="small"
+            >
+              {previousVertices.map((previous, i) => {
+                return <p key={i}>Node {previous.vertex}, Distance: {previous.previous}</p>
+              })}
+            </Card>
+            <Card
+              title={`List edges shortest path`}
+              style={{
+                minWidth: 165,
+                maxHeight: 195,
+                overflow: 'auto'
+              }}
+              size="small"
+            >
+              {edgeList.map((edge, i) => {
+                return <p key={i}>Edge {edge}</p>
+              })}
+            </Card>
+          </div>
+
+        }
+      </div>
       <div className='flex gap-2 w-fit'>
         <Select
           className='custom-select'
-          defaultValue={direct}
+          value={direct}
           style={{
             width: 180,
           }}
@@ -254,7 +331,7 @@ export default function Header({ nodes, edges, setNodes, setEdges, selectedNode,
         />
         <Select
           className='custom-select'
-          defaultValue={algorithm}
+          value={algorithm}
           style={{
             width: 180,
           }}
@@ -287,16 +364,18 @@ export default function Header({ nodes, edges, setNodes, setEdges, selectedNode,
           style={{
             width: 120,
           }}
-          defaultValue={nodeStart}
+          value={nodeStart}
           onChange={handleChangeNodeStart}
           options={nodes.map(node => ({
             value: `${node.id}`,
             label: node.data.label
           }))}
         />
-        <Button onClick={handleResetAll} className='custom-button'>Reset</Button>
+        <Button onClick={handleResetAll} className='custom-button'>
+          <ReloadOutlined />
+        </Button>
         <Button onClick={handleRunAlgorithm} className='custom-button'>
-          Run
+          <CaretRightOutlined />
         </Button>
       </div>
     </div>
