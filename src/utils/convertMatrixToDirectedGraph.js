@@ -1,3 +1,6 @@
+
+import getRandomPosition from "./getRandomPosition";
+
 export default function convertMatrixToDirectedGraph(matrix) {
   const initialNodes = [];
   const initialEdges = [];
@@ -7,7 +10,8 @@ export default function convertMatrixToDirectedGraph(matrix) {
     initialNodes.push({
       id: String(index + 1),
       data: { label: `Node ${index + 1}` },
-      position: { x: 100 + index * 100, y: 300 + index * 100 }, // Ví dụ về vị trí, có thể tùy chỉnh
+      type: 'nodeWithFourHandler',
+      position: { x: getRandomPosition(100, 1300), y: getRandomPosition(100, 1300) }
     });
   });
 

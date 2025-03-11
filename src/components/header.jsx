@@ -4,12 +4,13 @@ import React, { useEffect, useState } from 'react'
 import { Upload, Button, message } from 'antd'
 import { UploadOutlined } from '@ant-design/icons'
 import convertMatrixToUndirectedGraph from '@/utils/convertMatrixToUndirectedGraph'
-import convertMatrixToDirectedGraph from '@/utils/convertMatrixTodirectedGraph'
+import convertMatrixToDirectedGraph from '@/utils/convertMatrixToDirectedGraph'
 import validateMatrix from '@/utils/validateMatrix'
 import isUndirectedMatrix from '@/utils/isUndirectedMatrix'
 import { Slide, toast } from 'react-toastify'
 import { Card } from "antd";
-export default function Header({ nodes, setNodes, setEdges, selectedNode, selectedEdge }) {
+import Dijkstra from '@/algorithms/Dijkstra'
+export default function Header({ nodes, edges, setNodes, setEdges, selectedNode, selectedEdge, setSelectedNode, setSelectedEdge }) {
   // Handle run algorithm
   const [algorithm, setAlgorithm] = useState('Choose a algorithm')
   const [direct, setDirect] = useState('Choose a direct')
@@ -74,6 +75,16 @@ export default function Header({ nodes, setNodes, setEdges, selectedNode, select
   }
   const handleRunAlgorithm = () => {
     console.log(algorithm)
+    switch(algorithm) {
+      case 'dijkstra':
+        const { distances, previousVertices, edgeList} = Dijkstra(edges, nodeStart, direct, hasNegativeWeights);
+        const data = {
+          distances,
+          previousVertices,
+          edgeList
+        }
+        console.log(data)
+    }
 
   }
   // Upload File
@@ -164,7 +175,17 @@ export default function Header({ nodes, setNodes, setEdges, selectedNode, select
     maxCount: 1,  // Accept only one file
     onRemove: () => setFileContent('')  // Clear content when file is removed
   }
-
+  const handleDeleteNode = () => {
+    // Implement delete node logic here
+    setNodes(nodes.filter(node => node.id!== selectedNode.id))
+    setEdges(edges.filter(edge => edge.source!== selectedNode.id && edge.target!== selectedNode.id))
+    setSelectedNode(null)
+  }
+  const handleDeleteEdge = () => {
+    // Implement delete edge logic here
+    setEdges(edges.filter(edge => edge.id !== selectedEdge.id))
+    setSelectedEdge(null)
+  }
   return (
     <div className="w-screen h-50 bg-black fixed z-10 flex justify-between items-center px-5 py-5 text-white">
       <div className='flex gap-2'>
@@ -182,7 +203,7 @@ export default function Header({ nodes, setNodes, setEdges, selectedNode, select
             <Card
               title={`Node ${selectedNode.id}`}
               extra={
-                <button className=' text-black hover:text-opacity-15'>delete</button>
+                <button onClick={handleDeleteNode} className=' text-black hover:text-opacity-15'>delete</button>
               }
               style={{
                 width: 165,
@@ -197,7 +218,7 @@ export default function Header({ nodes, setNodes, setEdges, selectedNode, select
             <Card
               title={`Edge ${selectedEdge.id}`}
               extra={
-                <button className=' text-black hover:text-opacity-15'>delete</button>
+                <button onClick={handleDeleteEdge} className=' text-black hover:text-opacity-15'>delete</button>
               }
               style={{
                 width: 165,
@@ -269,7 +290,7 @@ export default function Header({ nodes, setNodes, setEdges, selectedNode, select
           defaultValue={nodeStart}
           onChange={handleChangeNodeStart}
           options={nodes.map(node => ({
-            value: node.id,
+            value: `${node.id}`,
             label: node.data.label
           }))}
         />

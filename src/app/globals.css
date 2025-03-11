@@ -17,3 +17,19 @@
 .custom-select:hover .ant-select-selector {
   border-color: black !important;
 }
+
+.ant-upload-icon {
+  color: white !important;
+}
+
+.ant-upload-list-item-name {
+  color: white !important;
+}
+
+.ant-upload-list-item-actions {
+  color: white !important;
+}
+
+.ant-upload-list-item-container span {
+  color: white !important;
+}

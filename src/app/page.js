@@ -1,6 +1,8 @@
 "use client"
 import React, { useCallback, useEffect, useState } from 'react';
 import '@xyflow/react/dist/style.css';
+import Header from '../components/Header'
+import NodeWithFourHandler from "@/components/nodes/NodeWithFourHandler";
 import {
   ReactFlow,
   MiniMap,
@@ -12,7 +14,7 @@ import {
   Panel,
   ControlButton,
 } from '@xyflow/react';
-import Header from '../components/Header'
+const nodeTypes = { nodeWithFourHandler: NodeWithFourHandler };
 export default function App() {
   const [initialNodes, setInitialNodes] = useState([])
   const [initialEdges, setInitialEdges] = useState([])
@@ -27,36 +29,17 @@ export default function App() {
   );
 
   useEffect(() => {
-    const handleKeyDown = (event) => {
-      if (event.key === 'Delete' && selectedNode) {
-        console.log('Deleted node')
-        setInitialNodes(initialNodes.filter(node => node.id !== selectedNode.id))
-        setNodes(initialNodes.filter(node => node.id !== selectedNode.id))
-        setInitialEdges(initialEdges.filter(edge => edge.source !== selectedNode.id && edge.target !== selectedNode.id))
-        setEdges(initialEdges.filter(edge => edge.source !== selectedNode.id && edge.target !== selectedNode.id))
-        setSelectedNode(null)
-      }
-      if (event.key === 'Delete' && selectedEdge) {
-        console.log('Deleted edge')
-        setSelectedEdge(null)
-      }
-    };
-
-    document.addEventListener('keydown', handleKeyDown)
-    return () => {
-      document.removeEventListener('keydown', handleKeyDown);
-    };
-  },[nodes, edges]);
-
-  if (selectedNode) {
-    console.log(selectedNode)
-  }
-  if (selectedEdge) {
-    console.log(selectedEdge)
-  }
+    console.log('Selected:', selected)
+  },[selected])
+  useEffect(() => {
+    console.log('Nodes:', nodes)
+  },[nodes])
+  useEffect(() => {
+    console.log('Edges:', edges)
+  },[edges])
   return (
     <>
-      <Header nodes={nodes} setNodes={setNodes} setEdges={setEdges} selectedNode={selectedNode} selectedEdge={selectedEdge} />
+      <Header nodes={nodes} edges={edges} setNodes={setNodes} setEdges={setEdges} selectedNode={selectedNode} selectedEdge={selectedEdge} setSelectedNode={setSelectedNode} setSelectedEdge={setSelectedEdge} />
       <div style={{ width: '100vw', height: '100vh' }}>
         <ReactFlow
           nodes={nodes}
@@ -64,9 +47,9 @@ export default function App() {
           onNodesChange={onNodesChange}
           onEdgesChange={onEdgesChange}
           onConnect={onConnect}
+          nodeTypes={nodeTypes}
           onNodeClick={(event, node) => {
             setSelectedNode(node)
-
           }}
           onEdgeClick={(event, edge) => {
             setSelectedEdge(edge)
