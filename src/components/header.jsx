@@ -290,7 +290,9 @@ export default function Header({ nodes, edges, setNodes, setEdges, selectedNode,
               size="small"
             >
               {previousVertices.map((previous, i) => {
-                return <p key={i}>Node {previous.vertex}, Distance: {previous.previous}</p>
+                if(previous.previous){
+                  return <p key={i}>Node {previous.vertex}, Distance: {previous.previous}</p>
+                }
               })}
             </Card>
             <Card
@@ -303,7 +305,9 @@ export default function Header({ nodes, edges, setNodes, setEdges, selectedNode,
               size="small"
             >
               {edgeList.map((edge, i) => {
-                return <p key={i}>Edge {edge}</p>
+                if(edge){
+                  return <p key={i}>Edge {edge}</p>
+                }
               })}
             </Card>
           </div>

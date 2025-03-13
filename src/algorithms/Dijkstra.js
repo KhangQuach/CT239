@@ -61,21 +61,27 @@ export default function Dijkstra(edges, startVertex, direct, hasNegativeWeights)
             }
         });
     }
-    
-    const edgeList = [];
-    // Loop over all vertices in previousVertices
-    for (const target in previousVertices) {
-        const source = previousVertices[target];
-        if (source) {
-            // Find the edge connecting the source to the target
-            const edge = edges.find(edge => edge.source === source && edge.target === target);
-            if (edge) {
-                edgeList.push(edge.id);
-            }
-        }
-    }
     distances = Object.keys(distances).map(key => ({ vertex: key, distance: distances[key] }));
     previousVertices = Object.keys(previousVertices).map(key => ({ vertex: key, previous: previousVertices[key] }));
+    const edgeList = previousVertices.map(node => {
+        if(node.previous){
+            return `e${node.previous}-${node.vertex}`
+        }
+        return null
+    });
+    // Loop over all vertices in previousVertices
+    // const edgeList = [];
+    // for (const target in previousVertices) {
+    //     const source = previousVertices[target];
+    //     if (source) {
+    //         // Find the edge connecting the source to the target
+    //         const edge = edges.find(edge => edge.source === source && edge.target === target);
+    //         if (edge) {
+    //             edgeList.push(edge.id);
+    //         }
+    //     }
+    // }
+    
     const endTime = performance.now();
     const executionTime = endTime - startTime;
     console.log('Dijkstra execution time: ', executionTime);
