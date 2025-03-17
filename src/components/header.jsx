@@ -10,9 +10,9 @@ import isUndirectedMatrix from '@/utils/isUndirectedMatrix'
 import { Slide, toast } from 'react-toastify'
 import { Card } from "antd";
 import Dijkstra from '@/algorithms/Dijkstra'
+import BellmanFord from '@/algorithms/BellmanFord'
 
 export default function Header({ nodes, edges, setNodes, setEdges, selectedNode, selectedEdge, setSelectedNode, setSelectedEdge }) {
-  // Handle run algorithm
   const [algorithm, setAlgorithm] = useState('Choose a algorithm')
   const [direct, setDirect] = useState('Choose a direct')
   const [fileContent, setFileContent] = useState(null)
@@ -32,7 +32,20 @@ export default function Header({ nodes, edges, setNodes, setEdges, selectedNode,
   }, [matrix])
 
   useEffect(() => {
-    console.log(error)
+    if (error) {
+      toast.dismiss()
+      toast.error(`${error}`, {
+        position: "bottom-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "dark",
+        transition: Slide,
+      });
+    }
   }, [error])
 
   const handleChangeAlgorithm = (value) => {
@@ -101,16 +114,33 @@ export default function Header({ nodes, edges, setNodes, setEdges, selectedNode,
     switch (algorithm) {
       case 'dijkstra':
         try {
-          const { distances, previousVertices, edgeList, executeTime } = Dijkstra(edges, nodeStart, direct, hasNegativeWeights);
+          const { distances, previousVertices, edgeList, executionTime } = Dijkstra(edges, nodeStart, direct, hasNegativeWeights);
           console.log(distances, previousVertices, edgeList)
           setDistances(distances)
           setPreviousVertices(previousVertices)
           setEdgeList(edgeList)
-          setExecuteTime(executeTime)
+          setExecuteTime(executionTime)
           setOnRun(true)
         } catch (e) {
           setError(e)
         }
+        break;
+      case 'bellman-ford':
+        const { distances, previousVertices, edgeList, executionTime } = BellmanFord(edges,nodes.length, nodeStart, direct);
+          console.log(distances, previousVertices, edgeList, executionTime)
+        break;
+      default:
+        toast.error('Chưa chọn thuật toán!', {
+          position: "bottom-right",
+          autoClose: 3000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: "dark",
+          transition: Slide,
+        })
     }
   }
 
@@ -290,7 +320,7 @@ export default function Header({ nodes, edges, setNodes, setEdges, selectedNode,
               size="small"
             >
               {previousVertices.map((previous, i) => {
-                if(previous.previous){
+                if (previous.previous) {
                   return <p key={i}>Node {previous.vertex}, Distance: {previous.previous}</p>
                 }
               })}
@@ -305,7 +335,7 @@ export default function Header({ nodes, edges, setNodes, setEdges, selectedNode,
               size="small"
             >
               {edgeList.map((edge, i) => {
-                if(edge){
+                if (edge) {
                   return <p key={i}>Edge {edge}</p>
                 }
               })}
@@ -363,18 +393,19 @@ export default function Header({ nodes, edges, setNodes, setEdges, selectedNode,
             },
           ]}
         />
-        <Select
-          className='custom-select node-start'
-          style={{
-            width: 120,
-          }}
-          value={nodeStart}
-          onChange={handleChangeNodeStart}
-          options={nodes.map(node => ({
-            value: `${node.id}`,
-            label: node.data.label
-          }))}
-        />
+        {(algorithm === 'dijkstra' || algorithm === 'bellman-ford') && (
+          <Select
+            className='custom-select node-start'
+            style={{
+              width: 120,
+            }}
+            value={nodeStart}
+            onChange={handleChangeNodeStart}
+            options={nodes.map(node => ({
+              value: `${node.id}`,
+              label: node.data.label
+            }))}
+          />)}
         <Button onClick={handleResetAll} className='custom-button'>
           <ReloadOutlined />
         </Button>
