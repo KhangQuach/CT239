@@ -115,7 +115,7 @@ export default function Header({ nodes, edges, setNodes, setEdges, selectedNode,
       case 'dijkstra':
         try {
           const { distances, previousVertices, edgeList, executionTime } = Dijkstra(edges, nodeStart, direct, hasNegativeWeights);
-          console.log(distances, previousVertices, edgeList)
+          console.log(distances, previousVertices, edgeList, executeTime)
           setDistances(distances)
           setPreviousVertices(previousVertices)
           setEdgeList(edgeList)
@@ -126,8 +126,13 @@ export default function Header({ nodes, edges, setNodes, setEdges, selectedNode,
         }
         break;
       case 'bellman-ford':
-        const { distances, previousVertices, edgeList, executionTime } = BellmanFord(edges,nodes.length, nodeStart, direct);
-          console.log(distances, previousVertices, edgeList, executionTime)
+        const { distances, previousVertices, edgeList, executionTime } = BellmanFord(edges, nodes.length, nodeStart, direct);
+        console.log(distances, previousVertices, edgeList, executionTime)
+        setDistances(distances)
+        setPreviousVertices(previousVertices)
+        setEdgeList(edgeList)
+        setExecuteTime(executionTime)
+        setOnRun(true)
         break;
       default:
         toast.error('Chưa chọn thuật toán!', {
@@ -295,7 +300,7 @@ export default function Header({ nodes, edges, setNodes, setEdges, selectedNode,
         </div>
       </div>
       <div>
-        {algorithm === 'dijkstra' && onRun && !error &&
+        {(algorithm === 'dijkstra' || algorithm === 'bellman-ford') && onRun && !error &&
           <div className='flex gap-2'>
             <Card
               title={`Distances from Node ${nodeStart}`}
