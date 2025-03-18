@@ -1,11 +1,10 @@
-
 import getRandomPosition from "./getRandomPosition";
 
 export default function convertMatrixToDirectedGraph(matrix) {
   const initialNodes = [];
   const initialEdges = [];
 
-  // Tạo nút cho mỗi hàng của ma trận
+  // Create nodes for each row of the matrix
   matrix.forEach((row, index) => {
     initialNodes.push({
       id: String(index + 1),
@@ -15,16 +14,23 @@ export default function convertMatrixToDirectedGraph(matrix) {
     });
   });
 
-  // Tạo cạnh dựa trên giá trị khác không trong ma trận
+  // Create edges based on non-zero values in the matrix
   matrix.forEach((row, sourceIndex) => {
     row.forEach((value, targetIndex) => {
-      if (value !== 0) { // Chỉ tạo cạnh khi giá trị khác không
+      if (value !== 0) { // Only create edges for non-zero values
+        const offsetX = (sourceIndex - targetIndex) * 10; // Dynamically adjust X offset
+        const offsetY = (sourceIndex + targetIndex) * 6; // Dynamically adjust Y offset
+
         initialEdges.push({
           id: `e${sourceIndex + 1}-${targetIndex + 1}`,
           source: String(sourceIndex + 1),
           target: String(targetIndex + 1),
           weight: value,
-          label: `${value}`, // Thêm trọng số vào nhãn cạnh
+          label: `${value}`,
+          labelStyle: { fontSize: '16px', fill: 'blue' },
+          animated: false,
+          labelOffsetX: offsetX, // Dynamically adjust label position
+          labelOffsetY: offsetY, // Dynamically adjust label position
         });
       }
     });

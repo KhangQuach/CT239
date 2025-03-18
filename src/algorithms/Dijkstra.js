@@ -1,4 +1,3 @@
-
 class PriorityQueue {
     constructor() {
         this.nodes = [];
@@ -21,8 +20,9 @@ class PriorityQueue {
 
 export default function Dijkstra(edges, startVertex, direct, hasNegativeWeights) {
     const startTime = performance.now();
+
     if (hasNegativeWeights) {
-        toast.dismiss()
+        toast.dismiss();
         toast.error('Đồ thị chứa trọng số âm!', {
             position: "bottom-right",
             autoClose: 3000,
@@ -36,21 +36,23 @@ export default function Dijkstra(edges, startVertex, direct, hasNegativeWeights)
         });
         throw new Error('Dijkstra algorithm does not support negative weights.');
     }
+
+    // Build adjacency list
     const adjacencyList = edges.reduce((acc, edge) => {
         acc[edge.source] = acc[edge.source] || [];
         acc[edge.source].push({ node: edge.target, weight: edge.weight });
         if (direct === 'undirected') {
             acc[edge.target] = acc[edge.target] || [];
-            acc[edge.target].push({ node: edge.source, weight: edge.weight }); // Thêm cạnh ngược lại cho đồ thị vô hướng
+            acc[edge.target].push({ node: edge.source, weight: edge.weight });
         }
         return acc;
     }, {});
 
-    let distances = {};
-    let previousVertices = {};
+    const distances = {};
+    const previousVertices = {};
     const priorityQueue = new PriorityQueue();
 
-    // Initialize distances and priority queue
+    // Initialize distances and previous vertices
     for (const edge of edges) {
         distances[edge.source] = Infinity;
         distances[edge.target] = Infinity;
@@ -61,6 +63,7 @@ export default function Dijkstra(edges, startVertex, direct, hasNegativeWeights)
     distances[startVertex] = 0;
     priorityQueue.enqueue(0, startVertex);
 
+    // Process the priority queue
     while (!priorityQueue.isEmpty()) {
         const currentVertex = priorityQueue.dequeue();
 
@@ -73,20 +76,30 @@ export default function Dijkstra(edges, startVertex, direct, hasNegativeWeights)
             }
         });
     }
-    distances = Object.keys(distances).map(key => ({ vertex: key, distance: distances[key] }));
-    previousVertices = Object.keys(previousVertices).map(key => ({ vertex: key, previous: previousVertices[key] }));
 
-    const edgeList = previousVertices.map(node => {
-        if (node.previous) {
-            return `e${node.previous}-${node.vertex}`
-        }
-        return null
-    });
+    // Format distances and previousVertices into the desired structure
+    const formattedDistances = Object.keys(distances).map(key => ({
+        vertex: key,
+        distance: distances[key],
+    }));
+
+    const formattedPreviousVertices = Object.keys(previousVertices).map(key => ({
+        vertex: key,
+        previous: previousVertices[key],
+    }));
+
+    // Create edge list from previous vertices
+    const edgeList = formattedPreviousVertices
+        .filter(node => node.previous !== null)
+        .map(node => `e${node.previous}-${node.vertex}`);
 
     const endTime = performance.now();
     const executionTime = endTime - startTime;
-    return { distances, previousVertices, edgeList, executionTime };
+
+    return {
+        distances: formattedDistances,
+        previousVertices: formattedPreviousVertices,
+        edgeList,
+        executionTime,
+    };
 }
-
-
-

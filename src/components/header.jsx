@@ -11,6 +11,8 @@ import { Slide, toast } from 'react-toastify'
 import { Card } from "antd";
 import Dijkstra from '@/algorithms/Dijkstra'
 import BellmanFord from '@/algorithms/BellmanFord'
+import ActiveEdgesResult from '@/utils/ActiveEdgesResult'
+import RemoveActiveEdgesResult from '@/utils/RemoveActiveEdgesResult'
 
 export default function Header({ nodes, edges, setNodes, setEdges, selectedNode, selectedEdge, setSelectedNode, setSelectedEdge }) {
   const [algorithm, setAlgorithm] = useState('Choose a algorithm')
@@ -89,6 +91,7 @@ export default function Header({ nodes, edges, setNodes, setEdges, selectedNode,
 
   const handleChangeNodeStart = (value) => {
     setNodeStart(value)
+    RemoveActiveEdgesResult(edges, setEdges)
   }
 
   const handleResetAll = () => {
@@ -116,11 +119,14 @@ export default function Header({ nodes, edges, setNodes, setEdges, selectedNode,
         try {
           const { distances, previousVertices, edgeList, executionTime } = Dijkstra(edges, nodeStart, direct, hasNegativeWeights);
           console.log(distances, previousVertices, edgeList, executeTime)
+          // Set state
           setDistances(distances)
           setPreviousVertices(previousVertices)
           setEdgeList(edgeList)
           setExecuteTime(executionTime)
           setOnRun(true)
+          // Add animation to the edges
+          ActiveEdgesResult(edges, setEdges, edgeList, direct)
         } catch (e) {
           setError(e)
         }
@@ -128,11 +134,14 @@ export default function Header({ nodes, edges, setNodes, setEdges, selectedNode,
       case 'bellman-ford':
         const { distances, previousVertices, edgeList, executionTime } = BellmanFord(edges, nodes.length, nodeStart, direct);
         console.log(distances, previousVertices, edgeList, executionTime)
+        // Set state
         setDistances(distances)
         setPreviousVertices(previousVertices)
         setEdgeList(edgeList)
         setExecuteTime(executionTime)
         setOnRun(true)
+        // Add animation to the edges
+        ActiveEdgesResult(edges, setEdges, edgeList, direct)
         break;
       default:
         toast.error('Chưa chọn thuật toán!', {
@@ -232,20 +241,18 @@ export default function Header({ nodes, edges, setNodes, setEdges, selectedNode,
       }
       return handleFileRead(file)
     },
-    accept: '.txt',  // Accept only .txt files
-    maxCount: 1,  // Accept only one file
-    onRemove: () => setFileContent('')  // Clear content when file is removed
+    accept: '.txt',
+    maxCount: 1,
+    onRemove: () => setFileContent('')
   }
 
   const handleDeleteNode = () => {
-    // Implement delete node logic here
     setNodes(nodes.filter(node => node.id !== selectedNode.id))
     setEdges(edges.filter(edge => edge.source !== selectedNode.id && edge.target !== selectedNode.id))
     setSelectedNode(null)
   }
 
   const handleDeleteEdge = () => {
-    // Implement delete edge logic here
     setEdges(edges.filter(edge => edge.id !== selectedEdge.id))
     setSelectedEdge(null)
   }
@@ -326,7 +333,7 @@ export default function Header({ nodes, edges, setNodes, setEdges, selectedNode,
             >
               {previousVertices.map((previous, i) => {
                 if (previous.previous) {
-                  return <p key={i}>Node {previous.vertex}, Distance: {previous.previous}</p>
+                  return <p key={i}>Node {previous.vertex}, Previous: {previous.previous}</p>
                 }
               })}
             </Card>

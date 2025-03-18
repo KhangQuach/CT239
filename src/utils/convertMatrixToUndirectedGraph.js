@@ -23,8 +23,10 @@ export default function convertMatrixToUndirectedGraph(matrix) {
           source: String(sourceIndex + 1),
           target: String(targetIndex + 1),
           weight: value,
-          label: `${value}`, // Thêm trọng số vào nhãn cạnh
-          type: 'straight', // Đặt loại cạnh mặc định, có thể tùy chỉnh
+          label: `${value}`,
+          labelStyle: { fontSize: '16px', fill: 'blue' },
+          type: 'straight',
+          animated: false
         });
       }
     });
