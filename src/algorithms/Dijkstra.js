@@ -1,3 +1,5 @@
+import { Slide, toast } from "react-toastify";
+
 class PriorityQueue {
     constructor() {
         this.nodes = [];

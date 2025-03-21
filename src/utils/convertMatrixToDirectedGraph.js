@@ -31,6 +31,12 @@ export default function convertMatrixToDirectedGraph(matrix) {
           animated: false,
           labelOffsetX: offsetX, // Dynamically adjust label position
           labelOffsetY: offsetY, // Dynamically adjust label position
+          markerEnd: {
+            type: 'arrowclosed', // Add an arrow at the target
+            color: 'black', // Arrow color,
+            width: 16, // Arrow width
+            height: 16, // Arrow height
+          },
         });
       }
     });

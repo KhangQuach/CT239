@@ -1,6 +1,6 @@
 'use client'
-import { Select } from 'antd'
-import React, { useEffect, useState } from 'react'
+import { Select, Tooltip } from 'antd'
+import React, { useEffect, useMemo, useState } from 'react'
 import { Upload, Button, message } from 'antd'
 import { CaretRightOutlined, ReloadOutlined, UploadOutlined } from '@ant-design/icons'
 import convertMatrixToUndirectedGraph from '@/utils/convertMatrixToUndirectedGraph'
@@ -13,8 +13,21 @@ import Dijkstra from '@/algorithms/Dijkstra'
 import BellmanFord from '@/algorithms/BellmanFord'
 import ActiveEdgesResult from '@/utils/ActiveEdgesResult'
 import RemoveActiveEdgesResult from '@/utils/RemoveActiveEdgesResult'
+import Johnson from '@/algorithms/Johnson'
 
 export default function Header({ nodes, edges, setNodes, setEdges, selectedNode, selectedEdge, setSelectedNode, setSelectedEdge }) {
+  const [arrow, setArrow] = useState('Show');
+  const mergedArrow = useMemo(() => {
+    if (arrow === 'Hide') {
+      return false;
+    }
+    if (arrow === 'Show') {
+      return true;
+    }
+    return {
+      pointAtCenter: true,
+    };
+  }, [arrow]);
   const [algorithm, setAlgorithm] = useState('Choose a algorithm')
   const [direct, setDirect] = useState('Choose a direct')
   const [fileContent, setFileContent] = useState(null)
@@ -35,18 +48,7 @@ export default function Header({ nodes, edges, setNodes, setEdges, selectedNode,
 
   useEffect(() => {
     if (error) {
-      toast.dismiss()
-      toast.error(`${error}`, {
-        position: "bottom-right",
-        autoClose: 3000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
-        theme: "dark",
-        transition: Slide,
-      });
+      console.error(error)
     }
   }, [error])
 
@@ -113,35 +115,82 @@ export default function Header({ nodes, edges, setNodes, setEdges, selectedNode,
   }
 
   const handleRunAlgorithm = () => {
-    console.log(algorithm)
+    console.log(algorithm);
     switch (algorithm) {
       case 'dijkstra':
         try {
+          if(nodeStart === 'Start node') {
+            toast.warning('Vui lòng chọn đỉnh bắt đầu!', {
+              position: "bottom-right",
+              autoClose: 3000,
+              hideProgressBar: false,
+              closeOnClick: true,
+              pauseOnHover: true,
+              draggable: true,
+              progress: undefined,
+              theme: "dark",
+              transition: Slide,
+            })
+            return;
+          }
           const { distances, previousVertices, edgeList, executionTime } = Dijkstra(edges, nodeStart, direct, hasNegativeWeights);
-          console.log(distances, previousVertices, edgeList, executeTime)
+          console.log(distances, previousVertices, edgeList, executionTime); // Corrected variable name
           // Set state
-          setDistances(distances)
-          setPreviousVertices(previousVertices)
-          setEdgeList(edgeList)
-          setExecuteTime(executionTime)
-          setOnRun(true)
+          setDistances(distances);
+          setPreviousVertices(previousVertices);
+          setEdgeList(edgeList);
+          setExecuteTime(executionTime); // Corrected variable name
+          setOnRun(true);
           // Add animation to the edges
-          ActiveEdgesResult(edges, setEdges, edgeList, direct)
+          ActiveEdgesResult(edges, setEdges, edgeList, direct);
         } catch (e) {
-          setError(e)
+          setError(e);
         }
         break;
       case 'bellman-ford':
-        const { distances, previousVertices, edgeList, executionTime } = BellmanFord(edges, nodes.length, nodeStart, direct);
-        console.log(distances, previousVertices, edgeList, executionTime)
-        // Set state
-        setDistances(distances)
-        setPreviousVertices(previousVertices)
-        setEdgeList(edgeList)
-        setExecuteTime(executionTime)
-        setOnRun(true)
-        // Add animation to the edges
-        ActiveEdgesResult(edges, setEdges, edgeList, direct)
+        try {
+          if(nodeStart === 'Start node') {
+            toast.warning('Vui lòng chọn đỉnh bắt đầu!', {
+              position: "bottom-right",
+              autoClose: 3000,
+              hideProgressBar: false,
+              closeOnClick: true,
+              pauseOnHover: true,
+              draggable: true,
+              progress: undefined,
+              theme: "dark",
+              transition: Slide,
+            })
+            return;
+          }
+          const { distances, previousVertices, edgeList, executionTime } = BellmanFord(edges, nodes.length, nodeStart, direct);
+          console.log(distances, previousVertices, edgeList, executionTime); // Corrected variable name
+          // Set state
+          setDistances(distances);
+          setPreviousVertices(previousVertices);
+          setEdgeList(edgeList);
+          setExecuteTime(executionTime); // Corrected variable name
+          setOnRun(true);
+          // Add animation to the edges
+          ActiveEdgesResult(edges, setEdges, edgeList, direct);
+        } catch (e) {
+          setError(e);
+        }
+        break;
+      case 'johnson':
+        try {
+          const { distances, executionTime } = Johnson(edges, nodes.length, direct);
+          console.log(distances, executionTime); // Corrected variable name
+          // Set state
+          setDistances(distances);
+          setExecuteTime(executionTime); // Corrected variable name
+          setOnRun(true);
+          const directedGraph = convertMatrixToDirectedGraph(distances)
+          setNodes(directedGraph.initialNodes)
+          setEdges(directedGraph.initialEdges)
+        } catch (e) {
+          setError(e);
+        }
         break;
       default:
         toast.error('Chưa chọn thuật toán!', {
@@ -154,9 +203,9 @@ export default function Header({ nodes, edges, setNodes, setEdges, selectedNode,
           progress: undefined,
           theme: "dark",
           transition: Slide,
-        })
+        });
     }
-  }
+  };
 
   // Upload File
   const handleFileRead = (file) => {
@@ -418,12 +467,18 @@ export default function Header({ nodes, edges, setNodes, setEdges, selectedNode,
               label: node.data.label
             }))}
           />)}
-        <Button onClick={handleResetAll} className='custom-button'>
-          <ReloadOutlined />
-        </Button>
-        <Button onClick={handleRunAlgorithm} className='custom-button'>
-          <CaretRightOutlined />
-        </Button>
+
+        <Tooltip className='border-white' placement="bottomRight" title={'Reset'} arrow={mergedArrow}>
+          <Button onClick={handleResetAll} className='custom-button'>
+            <ReloadOutlined />
+          </Button>
+        </Tooltip>
+        <Tooltip className='border-white' placement="bottomRight" title={'Run'} arrow={mergedArrow}>
+          <Button onClick={handleRunAlgorithm} className='custom-button'>
+            <CaretRightOutlined />
+          </Button>
+        </Tooltip>
+
       </div>
     </div>
   )

@@ -1,3 +1,5 @@
+import { Slide, toast } from 'react-toastify';
+
 export default function BellmanFord(edges, numVertices, source, direct) {
     if (direct === 'undirected') {
         throw new Error('Bellman-Ford algorithm does not support undirected graph.');
@@ -13,7 +15,9 @@ export default function BellmanFord(edges, numVertices, source, direct) {
         vertex: (index + 1).toString(),
         previous: null
     }));
-    distances[source - 1].distance = 0; // Adjust source index
+    if (distances[source - 1].distance) {
+        distances[source - 1].distance = 0; // Adjust source index
+    }
 
     // Relax edges repeatedly
     for (let i = 0; i < numVertices - 1; i++) {
@@ -40,8 +44,19 @@ export default function BellmanFord(edges, numVertices, source, direct) {
         const v = parseInt(edge.target) - 1;
         const weight = edge.weight;
         if (distances[u].distance !== Infinity && distances[u].distance + weight < distances[v].distance) {
-            console.error("Graph contains a negative weight cycle");
-            return null;
+            // Display a toast notification and terminate the function
+            toast.error('Đồ thị chứa chu trình âm', {
+                position: "bottom-right",
+                autoClose: 3000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true,
+                progress: undefined,
+                theme: "dark",
+                transition: Slide,
+            });
+            return null; // End the function
         }
     }
 
