@@ -14,6 +14,7 @@ import BellmanFord from '@/algorithms/BellmanFord'
 import ActiveEdgesResult from '@/utils/ActiveEdgesResult'
 import RemoveActiveEdgesResult from '@/utils/RemoveActiveEdgesResult'
 import Johnson from '@/algorithms/Johnson'
+import FloydWarshall from '@/algorithms/FloydWarshall'
 
 export default function Header({ nodes, edges, setNodes, setEdges, selectedNode, selectedEdge, setSelectedNode, setSelectedEdge }) {
   const [arrow, setArrow] = useState('Show');
@@ -119,7 +120,7 @@ export default function Header({ nodes, edges, setNodes, setEdges, selectedNode,
     switch (algorithm) {
       case 'dijkstra':
         try {
-          if(nodeStart === 'Start node') {
+          if (nodeStart === 'Start node') {
             toast.warning('Vui lòng chọn đỉnh bắt đầu!', {
               position: "bottom-right",
               autoClose: 3000,
@@ -142,6 +143,7 @@ export default function Header({ nodes, edges, setNodes, setEdges, selectedNode,
           setExecuteTime(executionTime); // Corrected variable name
           setOnRun(true);
           // Add animation to the edges
+          RemoveActiveEdgesResult(edges, setEdges);
           ActiveEdgesResult(edges, setEdges, edgeList, direct);
         } catch (e) {
           setError(e);
@@ -149,7 +151,7 @@ export default function Header({ nodes, edges, setNodes, setEdges, selectedNode,
         break;
       case 'bellman-ford':
         try {
-          if(nodeStart === 'Start node') {
+          if (nodeStart === 'Start node') {
             toast.warning('Vui lòng chọn đỉnh bắt đầu!', {
               position: "bottom-right",
               autoClose: 3000,
@@ -172,7 +174,23 @@ export default function Header({ nodes, edges, setNodes, setEdges, selectedNode,
           setExecuteTime(executionTime); // Corrected variable name
           setOnRun(true);
           // Add animation to the edges
+          RemoveActiveEdgesResult(edges, setEdges);
           ActiveEdgesResult(edges, setEdges, edgeList, direct);
+        } catch (e) {
+          setError(e);
+        }
+        break;
+      case 'floyd-warshall':
+        try {
+          const { distances, executionTime } = FloydWarshall(edges, direct);
+          console.log(distances, executionTime); // Corrected variable name
+          // Set state
+          setDistances(distances);
+          setExecuteTime(executionTime); // Corrected variable name
+          setOnRun(true);
+          const directedGraph = convertMatrixToDirectedGraph(distances)
+          setNodes(directedGraph.initialNodes)
+          setEdges(directedGraph.initialEdges)
         } catch (e) {
           setError(e);
         }
@@ -405,7 +423,7 @@ export default function Header({ nodes, edges, setNodes, setEdges, selectedNode,
 
         }
       </div>
-      <div className='flex gap-2 w-fit'>
+      <div className='flex gap-2 w-fit items-start'>
         <Select
           className='custom-select'
           value={direct}
