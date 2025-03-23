@@ -42,7 +42,19 @@ export default function Header({ nodes, edges, setNodes, setEdges, selectedNode,
   const [executeTime, setExecuteTime] = useState(0)
   const [error, setError] = useState(null)
   const [onRun, setOnRun] = useState(false)
+  const constructPath = (previousVertices, startNode) => {
+    const path = [];
+    let currentNode = previousVertices.find(v => v.vertex === startNode)?.vertex;
 
+    while (currentNode) {
+      path.unshift(currentNode); // Add the current node to the path
+      const previous = previousVertices.find(v => v.vertex === currentNode)?.previous;
+      if (!previous) break; // Stop if there is no previous node
+      currentNode = previous;
+    }
+
+    return path;
+  };
   useEffect(() => {
     console.log('Matrix updated:', matrix)
   }, [matrix])
@@ -113,6 +125,8 @@ export default function Header({ nodes, edges, setNodes, setEdges, selectedNode,
     setExecuteTime(0)
     setError(null)
     setOnRun(false)
+    setSelectedNode(null)
+    setSelectedEdge(null)
   }
 
   const handleRunAlgorithm = () => {
@@ -498,6 +512,13 @@ export default function Header({ nodes, edges, setNodes, setEdges, selectedNode,
         </Tooltip>
 
       </div>
+      {executeTime > 0 &&
+        <div className='absolute right-0 bottom-0 mx-2 my-2'>
+          <p>Execution Time: <span className='text-red-500'>{executeTime.toFixed(4)} ms</span></p>
+          <p>Shortest Path: {constructPath(previousVertices, nodeStart).length > 0 ? constructPath(previousVertices, nodeStart).join(' -> ') : 'No path found'}</p>
+        </div>
+      }
+
     </div>
   )
 }
