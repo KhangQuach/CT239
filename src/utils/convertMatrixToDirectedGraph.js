@@ -17,7 +17,7 @@ export default function convertMatrixToDirectedGraph(matrix) {
   // Create edges based on non-zero values in the matrix
   matrix.forEach((row, sourceIndex) => {
     row.forEach((value, targetIndex) => {
-      if (value !== 0) { // Only create edges for non-zero values
+      if (value !== 0 && value !== Infinity) { // Only create edges for non-zero values
         const offsetX = (sourceIndex - targetIndex) * 10; // Dynamically adjust X offset
         const offsetY = (sourceIndex + targetIndex) * 6; // Dynamically adjust Y offset
 
