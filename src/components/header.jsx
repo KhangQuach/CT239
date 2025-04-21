@@ -16,6 +16,7 @@ import RemoveActiveEdgesResult from '@/utils/RemoveActiveEdgesResult'
 import Johnson from '@/algorithms/Johnson'
 import FloydWarshall from '@/algorithms/FloydWarshall'
 import constructShortestPath from '@/utils/helpers/constructShortestPath'
+import AStar from '@/algorithms/Astar'
 
 export default function Header({ nodes, edges, setNodes, setEdges, selectedNode, selectedEdge, setSelectedNode, setSelectedEdge }) {
   const [arrow, setArrow] = useState('Show');
@@ -133,6 +134,8 @@ export default function Header({ nodes, edges, setNodes, setEdges, selectedNode,
     setOnRun(false)
     setSelectedNode(null)
     setSelectedEdge(null)
+    setShortestPath([])
+    setTargetNode('Target node')
   }
 
   const handleRunAlgorithm = () => {
@@ -207,6 +210,28 @@ export default function Header({ nodes, edges, setNodes, setEdges, selectedNode,
           RemoveActiveEdgesResult(edges, setEdges);
           ActiveEdgesResult(edges, setEdges, edgeList, direct);
         } catch (e) {
+          setError(e);
+        }
+        break;
+      case 'a*':
+        try {
+          const { distances, previousVertices, edgeList, executionTime } = AStar(edges, nodeStart, targetNode, direct);
+          console.log(distances, previousVertices, edgeList, executionTime);
+          // Set state
+          setDistances(distances);
+          setPreviousVertices(previousVertices);
+          setEdgeList(edgeList);
+          setExecuteTime(executionTime); // Corrected variable name
+          setOnRun(true);
+          // Set shortest path from start node to target node
+          if(targetNode !== 'Target node') {
+            const shortestPath = constructShortestPath(previousVertices, nodeStart, targetNode).join(' -> ');
+            setShortestPath(shortestPath);
+          }
+          // Add animation to the edges
+          RemoveActiveEdgesResult(edges, setEdges);
+          ActiveEdgesResult(edges, setEdges, edgeList, direct);
+        }catch (e) {
           setError(e);
         }
         break;
@@ -369,8 +394,8 @@ export default function Header({ nodes, edges, setNodes, setEdges, selectedNode,
   }
 
   return (
-    <div className="w-screen h-50 bg-black fixed z-10 flex justify-between items-center px-5 py-5 text-white">
-      <div className='flex gap-2'>
+    <div className="w-screen h-50 bg-black fixed z-10 flex justify-between px-5 py-5 text-white">
+      <div className='flex gap-2 self-start'>
         <div>
           <Upload {...UploadProps} >
             <Button className='custom-button' icon={<UploadOutlined />}>Click to Upload and Read .txt File</Button>
@@ -417,8 +442,8 @@ export default function Header({ nodes, edges, setNodes, setEdges, selectedNode,
           )}
         </div>
       </div>
-      <div>
-        {(algorithm === 'dijkstra' || algorithm === 'bellman-ford') && onRun && !error &&
+      <div className='self-start'>
+        {(algorithm === 'dijkstra' || algorithm === 'bellman-ford' || algorithm === 'a*') && onRun && !error &&
           <div className='flex gap-2'>
             <Card
               title={`Distances from Node ${nodeStart}`}
@@ -467,7 +492,7 @@ export default function Header({ nodes, edges, setNodes, setEdges, selectedNode,
 
         }
       </div>
-      <div className='flex gap-2 w-fit items-start'>
+      <div className='flex gap-2 w-fit self-center'>
         <Select
           className='custom-select'
           value={direct}
@@ -516,7 +541,7 @@ export default function Header({ nodes, edges, setNodes, setEdges, selectedNode,
             },
           ]}
         />
-        {(algorithm === 'dijkstra' || algorithm === 'bellman-ford') && (
+        {(algorithm === 'dijkstra' || algorithm === 'bellman-ford' || algorithm === 'a*') && (
           <>
             <Select
             className='custom-select node-start'
@@ -560,7 +585,7 @@ export default function Header({ nodes, edges, setNodes, setEdges, selectedNode,
       {executeTime > 0 &&
         <div className='absolute right-0 bottom-0 mx-2 my-2'>
           <p>Execution Time: <span className='text-red-500'>{executeTime.toFixed(4)} ms</span></p>
-          <p>Shortest Path: {shortestPath}</p>
+          <p>Shortest Path: {shortestPath && shortestPath.length > 0 ? shortestPath : "Vui lòng chọn Target Node!"}</p>
         </div>
       }
 
