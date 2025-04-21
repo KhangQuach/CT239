@@ -2,7 +2,17 @@ import { Slide, toast } from 'react-toastify';
 
 export default function BellmanFord(edges, numVertices, source, direct) {
     if (direct === 'undirected') {
-        throw new Error('Bellman-Ford algorithm does not support undirected graph.');
+        toast.error('Thuật toán Bellman-Ford không hỗ trợ đồ thị vô hướng', {
+            position: "bottom-right",
+            autoClose: 3000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+            theme: "dark",
+            transition: Slide,
+        });
     }
     const startTime = performance.now();
 

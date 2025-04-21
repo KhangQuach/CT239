@@ -18,24 +18,29 @@ export default function convertMatrixToDirectedGraph(matrix) {
   matrix.forEach((row, sourceIndex) => {
     row.forEach((value, targetIndex) => {
       if (value !== 0 && value !== Infinity) { // Only create edges for non-zero values
-        const offsetX = (sourceIndex - targetIndex) * 10; // Dynamically adjust X offset
-        const offsetY = (sourceIndex + targetIndex) * 6; // Dynamically adjust Y offset
-
+        const offsetX = (sourceIndex - targetIndex) * 10 + 10;
+        const offsetY = (sourceIndex + targetIndex) * 6 + 10;
         initialEdges.push({
           id: `e${sourceIndex + 1}-${targetIndex + 1}`,
           source: String(sourceIndex + 1),
           target: String(targetIndex + 1),
           weight: value,
           label: `${value}`,
-          labelStyle: { fontSize: '16px', fill: 'blue' },
+          labelStyle: {
+            fontSize: '16px',
+            fill: 'blue',
+            transform: `translate(${offsetX}px, ${offsetY}px)`,
+            
+          },
+          labelBgStyle: {
+            fill: 'transparent', // Background color
+          },
           animated: false,
-          labelOffsetX: offsetX, // Dynamically adjust label position
-          labelOffsetY: offsetY, // Dynamically adjust label position
           markerEnd: {
             type: 'arrowclosed', // Add an arrow at the target
             color: 'black', // Arrow color,
-            width: 16, // Arrow width
-            height: 16, // Arrow height
+            width: 24, // Arrow width
+            height: 24, // Arrow height
           },
         });
       }

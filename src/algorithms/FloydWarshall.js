@@ -1,3 +1,5 @@
+import { Slide, toast } from "react-toastify";
+
 function createAdjacencyMatrix(edges) {
     // Determine the number of vertices
     let numVertices = 0;
@@ -35,7 +37,7 @@ export default function FloydWarshall(graph, direct) {
 
     const startTime = performance.now(); // Start measuring execution time
 
-    // Floyd-Warshall algorithm
+    // Floyd-Warshall algorithm 
     for (let k = 0; k < numVertices; k++) {
         for (let i = 0; i < numVertices; i++) {
             for (let j = 0; j < numVertices; j++) {
@@ -49,17 +51,6 @@ export default function FloydWarshall(graph, direct) {
     // Check for negative weight cycles
     for (let i = 0; i < numVertices; i++) {
         if (dist[i][i] < 0) {
-            // Display a toast notification and terminate the function
-            toast.error('Graph contains a negative weight cycle.', {
-                position: "bottom-right",
-                autoClose: 3000,
-                hideProgressBar: false,
-                closeOnClick: true,
-                pauseOnHover: true,
-                draggable: true,
-                progress: undefined,
-                theme: "dark",
-            });
             return null; // End the function
         }
     }

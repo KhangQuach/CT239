@@ -15,6 +15,7 @@ import ActiveEdgesResult from '@/utils/ActiveEdgesResult'
 import RemoveActiveEdgesResult from '@/utils/RemoveActiveEdgesResult'
 import Johnson from '@/algorithms/Johnson'
 import FloydWarshall from '@/algorithms/FloydWarshall'
+import constructShortestPath from '@/utils/helpers/constructShortestPath'
 
 export default function Header({ nodes, edges, setNodes, setEdges, selectedNode, selectedEdge, setSelectedNode, setSelectedEdge }) {
   const [arrow, setArrow] = useState('Show');
@@ -35,6 +36,7 @@ export default function Header({ nodes, edges, setNodes, setEdges, selectedNode,
   const [matrix, setMatrix] = useState([])
   const [hasNegativeWeights, setHasNegativeWeights] = useState(false)
   const [nodeStart, setNodeStart] = useState('Start node')
+  const [targetNode, setTargetNode] = useState('Target node')
   const [distances, setDistances] = useState([])
   const [previousVertices, setPreviousVertices] = useState([])
   const [edgeList, setEdgeList] = useState([])
@@ -42,6 +44,7 @@ export default function Header({ nodes, edges, setNodes, setEdges, selectedNode,
   const [executeTime, setExecuteTime] = useState(0)
   const [error, setError] = useState(null)
   const [onRun, setOnRun] = useState(false)
+  const [shortestPath, setShortestPath] = useState([])
   const constructPath = (previousVertices, startNode) => {
     const path = [];
     let currentNode = previousVertices.find(v => v.vertex === startNode)?.vertex;
@@ -108,7 +111,10 @@ export default function Header({ nodes, edges, setNodes, setEdges, selectedNode,
     setNodeStart(value)
     RemoveActiveEdgesResult(edges, setEdges)
   }
-
+  const handleChangeTargetNode = (value) => {
+    setTargetNode(value)
+    RemoveActiveEdgesResult(edges, setEdges)
+  }
   const handleResetAll = () => {
     setMatrix([])
     setNodes([])
@@ -156,6 +162,11 @@ export default function Header({ nodes, edges, setNodes, setEdges, selectedNode,
           setEdgeList(edgeList);
           setExecuteTime(executionTime); // Corrected variable name
           setOnRun(true);
+          // Set shortest path from start node to target node
+          if(targetNode !== 'Target node') {
+            const shortestPath = constructShortestPath(previousVertices, nodeStart, targetNode).join(' -> ');
+            setShortestPath(shortestPath);
+          }
           // Add animation to the edges
           RemoveActiveEdgesResult(edges, setEdges);
           ActiveEdgesResult(edges, setEdges, edgeList, direct);
@@ -187,6 +198,11 @@ export default function Header({ nodes, edges, setNodes, setEdges, selectedNode,
           setEdgeList(edgeList);
           setExecuteTime(executionTime); // Corrected variable name
           setOnRun(true);
+          // Set shortest path from start node to target node
+          if(targetNode !== 'Target node') {
+            const shortestPath = constructShortestPath(previousVertices, nodeStart, targetNode).join(' -> ');
+            setShortestPath(shortestPath);
+          }
           // Add animation to the edges
           RemoveActiveEdgesResult(edges, setEdges);
           ActiveEdgesResult(edges, setEdges, edgeList, direct);
@@ -196,15 +212,29 @@ export default function Header({ nodes, edges, setNodes, setEdges, selectedNode,
         break;
       case 'floyd-warshall':
         try {
-          const { distances, executionTime } = FloydWarshall(edges, direct);
-          console.log(distances, executionTime); // Corrected variable name
-          // Set state
+          const result = FloydWarshall(edges, direct);
+          if (!result) {
+            toast.error('Đồ thị chứa chu trình âm!', {
+              position: "bottom-right",
+              autoClose: 3000,
+              hideProgressBar: false,
+              closeOnClick: true,
+              pauseOnHover: true,
+              draggable: true,
+              progress: undefined,
+              theme: "dark",
+              transition: Slide,
+            });
+            return;
+          }
+          const { distances, executionTime } = result;
+          console.log(distances, executionTime);
           setDistances(distances);
-          setExecuteTime(executionTime); // Corrected variable name
+          setExecuteTime(executionTime);
           setOnRun(true);
-          const directedGraph = convertMatrixToDirectedGraph(distances)
-          setNodes(directedGraph.initialNodes)
-          setEdges(directedGraph.initialEdges)
+          const directedGraph = convertMatrixToDirectedGraph(distances);
+          setNodes(directedGraph.initialNodes);
+          setEdges(directedGraph.initialEdges);
         } catch (e) {
           setError(e);
         }
@@ -487,7 +517,8 @@ export default function Header({ nodes, edges, setNodes, setEdges, selectedNode,
           ]}
         />
         {(algorithm === 'dijkstra' || algorithm === 'bellman-ford') && (
-          <Select
+          <>
+            <Select
             className='custom-select node-start'
             style={{
               width: 120,
@@ -498,7 +529,21 @@ export default function Header({ nodes, edges, setNodes, setEdges, selectedNode,
               value: `${node.id}`,
               label: node.data.label
             }))}
-          />)}
+          />
+          <Select
+            className='custom-select node-start'
+            style={{
+              width: 120,
+            }}
+            value={targetNode}
+            onChange={handleChangeTargetNode}
+            options={nodes.map(node => ({
+              value: `${node.id}`,
+              label: node.data.label
+            }))}
+          />
+          </>
+        )}
 
         <Tooltip className='border-white' placement="bottomRight" title={'Reset'} arrow={mergedArrow}>
           <Button onClick={handleResetAll} className='custom-button'>
@@ -515,7 +560,7 @@ export default function Header({ nodes, edges, setNodes, setEdges, selectedNode,
       {executeTime > 0 &&
         <div className='absolute right-0 bottom-0 mx-2 my-2'>
           <p>Execution Time: <span className='text-red-500'>{executeTime.toFixed(4)} ms</span></p>
-          <p>Shortest Path: {constructPath(previousVertices, nodeStart).length > 0 ? constructPath(previousVertices, nodeStart).join(' -> ') : 'No path found'}</p>
+          <p>Shortest Path: {shortestPath}</p>
         </div>
       }
 
